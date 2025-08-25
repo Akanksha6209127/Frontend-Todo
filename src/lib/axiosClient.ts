@@ -18,7 +18,7 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
-axiosClient.get("/auth/me")
+axiosClient.get("/api/auth/me")
   .then((res) => {
     console.log("User data:", res.data);
   })

@@ -5,8 +5,8 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   // If not logged in, redirect to login page
-  if (!token && request.nextUrl.pathname.startsWith("/api/todos")) {
-    return NextResponse.redirect(new URL("/api/auth/login", request.url));
+  if (!token && request.nextUrl.pathname.startsWith("/todos")) {
+    return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   return NextResponse.next();

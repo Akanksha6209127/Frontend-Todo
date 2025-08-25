@@ -12,7 +12,7 @@ export default function LogoutButton() {
 
   const logout = () => {
     document.cookie = "token=; path=/; max-age=0"; // delete cookie
-    router.push("/api/login");
+    router.push("/signin");
   };
 
   return (

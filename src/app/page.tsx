@@ -1,6 +1,42 @@
 
 
 
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import { useRouter } from "next/navigation";
+// import UserButton from "@/components/user-button";
+
+// export default function Home() {
+//   const router = useRouter();
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const token = document.cookie
+//       .split("; ")
+//       .find((row) => row.startsWith("token="))
+//       ?.split("=")[1];
+
+//     if (!token) {
+//       router.push("/signin"); //  UI login page
+//     } else {
+//       //Agar token hai, dashboard route pe bhejo
+//       router.push("/dashboard");
+//     }
+
+//     setLoading(false);
+//   }, [router]);
+
+//   if (loading) return <p className="text-center mt-10">Loading...</p>;
+
+//   return (
+//     <div className="min-h-screen flex flex-col items-center p-6">
+//       <UserButton />
+//     </div>
+//   );
+// }
+
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,20 +54,19 @@ export default function Home() {
       ?.split("=")[1];
 
     if (!token) {
-      router.push("/login"); //  UI login page
+      router.replace("/signin"); // safer than push for redirects
     } else {
-      //Agar token hai, dashboard route pe bhejo
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
 
-    setLoading(false);
+    // No need to set loading false if redirecting
+    // Only set loading false if you want to render something
   }, [router]);
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-
+  // Optionally show a loading spinner until redirect
   return (
-    <div className="min-h-screen flex flex-col items-center p-6">
-      <UserButton />
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-center text-gray-500">Redirecting...</p>
     </div>
   );
 }

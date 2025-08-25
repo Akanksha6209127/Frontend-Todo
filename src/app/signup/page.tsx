@@ -34,7 +34,7 @@ const SignUp = () => {
     e.preventDefault();
     setPending(true);
 
-    // ✅ client-side confirm password check
+    
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match!");
       setPending(false);
@@ -42,20 +42,20 @@ const SignUp = () => {
     }
 
     try {
-      // confirmPassword ko exclude karna
+      
       const { confirmPassword, ...payload } = form;
 
       const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // ✅ confirmPassword not sent
+        body: JSON.stringify(payload), 
       });
 
       const data = await res.json();
 
       if (res.ok) {
         toast.success(data.message);
-        router.push("/login"); // ✅ signup ke baad login page bhejna sahi hai
+        router.push("/signin"); 
       } else {
         setError(data.message || "Something went wrong!");
       }
@@ -138,7 +138,7 @@ const SignUp = () => {
             Already have an account?
             <Link
               className="text-sky-700 ml-2 hover:underline cursor-pointer"
-              href="/login"
+              href="/signin"
             >
               Sign in
             </Link>

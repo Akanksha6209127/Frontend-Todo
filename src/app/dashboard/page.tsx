@@ -1,11 +1,21 @@
 
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosClient from "@/lib/axiosClient";
+
+import { TodoProvider } from "@/components/todo/TodoContext";
+import LayoutWrapper from "@/components/todo/LayoutWrapper";
+import TodoSection from "@/components/todo/TodoSection";
+import ListSection from "@/components/todo/ListSection";
+
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs"; 
 
 type UserType = {
   _id: string;
@@ -19,56 +29,68 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  
-    useEffect(() => {
-      const fetchUser = async () => {
-        try {
-          const res = await axiosClient.get("/api/auth/me");
-          if (res.data && res.data._id) {
-            setUser(res.data);
-          } else {
-            router.replace("/login");
-            return;
-          }
-        } catch (err) {
-          router.replace("/login");
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axiosClient.get("/api/auth/me");
+        if (res.data && res.data._id) {
+          setUser(res.data);
+        } else {
+          router.replace("/signin");
           return;
-        } finally {
-          setLoading(false);
         }
-      };
+      } catch (err) {
+        router.replace("/signin");
+        return;
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchUser();
-  }, []); // run once on mount
-
-
+  }, [router]);
 
   if (loading) return <p>Loading...</p>;
-
-  if (!user) return null; // jab tak redirect ho raha hai tab tak blank
+  if (!user) return null; // redirect hone tak blank
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">
-        Welcome, {user.name} 👋
-      </h1>
-      <p className="text-gray-600 mt-2">Your role: {user.role}</p>
+    <TodoProvider>
+      <LayoutWrapper>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Welcome, {user.name} 👋
+            </h1>
+            <p className="text-gray-600 mt-1">Your role: {user.role}</p>
+          </div>
+        </div>
 
-      {/* Example dashboard content */}
-      <div className="mt-6 space-y-4">
-        <button
-          onClick={() => router.push("/todos")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md"
-        >
-          Go to Todos
-        </button>
+        {/*  ShadCN Tabs */}
+        <Tabs defaultValue="todos" className="w-full mt-6">
+          <TabsList className="flex space-x-2">
+            <TabsTrigger value="todos">Lists</TabsTrigger>
+            <TabsTrigger value="lists">Todos</TabsTrigger>
+          </TabsList>
 
-        <button
-          onClick={() => router.push("/profile")}
-          className="bg-green-600 text-white px-4 py-2 rounded-md"
-        >
-          View Profile
-        </button>
-      </div>
-    </div>
+          <div className="mt-6">
+            <TabsContent value="todos">
+              <TodoSection />
+            </TabsContent>
+
+            <TabsContent value="lists">
+              <ListSection />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </LayoutWrapper>
+    </TodoProvider>
   );
 }
+
+
+
+
+
+
+
+

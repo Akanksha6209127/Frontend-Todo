@@ -1,35 +1,36 @@
+
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardContent,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { TriangleAlert } from "lucide-react";
 
-const SignIn = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
+interface SignInForm {
+  email: string;
+  password: string;
+}
+
+const SignInPage: React.FC = () => {
+  const [form, setForm] = useState<SignInForm>({ email: "", password: "" });
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPending(true);
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -37,17 +38,16 @@ const SignIn = () => {
 
       const data = await res.json();
 
-      if (res.ok) {
-        if (data.token) {
-          // Set token in cookie
-          document.cookie = `token=${data.token}; path=/; max-age=86400`; // 1 day
-        }
-        toast.success(data.message || "Login successful");
+      if (res.ok && data.token) {
+        // Save token in cookie for 1 day
+        document.cookie = `token=${data.token}; path=/; max-age=86400`;
+        toast.success(data.message || "Login successful!");
         router.push("/dashboard");
       } else {
         setError(data.message || "Something went wrong");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       setError("Server error");
     } finally {
       setPending(false);
@@ -55,16 +55,16 @@ const SignIn = () => {
   };
 
   return (
-    <div className="h-[100vh] flex items-center justify-center bg-[#1b0918]">
+    <div className="h-screen flex items-center justify-center bg-[#1b0918]">
       <Card className="w-[80%] sm:w-[420px] p-4 sm:p-8">
         <CardHeader>
           <CardTitle className="text-center">Sign in</CardTitle>
           <CardDescription className="text-sm text-center">
-            Use email and password
+            Use your email and password
           </CardDescription>
         </CardHeader>
 
-        {!!error && (
+        {error && (
           <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6">
             <TriangleAlert />
             <p>{error}</p>
@@ -75,33 +75,30 @@ const SignIn = () => {
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
               type="email"
-              disabled={pending}
               placeholder="Email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
+              disabled={pending}
               required
             />
             <Input
               type="password"
-              disabled={pending}
               placeholder="Password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
+              disabled={pending}
               required
             />
-            <Button className="w-full" size="lg" disabled={pending}>
-              Login
+            <Button type="submit" className="w-full" disabled={pending} size="lg">
+              {pending ? "Signing in..." : "Sign in"}
             </Button>
           </form>
 
           <Separator className="my-4" />
 
           <p className="text-center text-sm text-muted-foreground">
-            Don’t have an account?
-            <Link
-              className="text-sky-700 ml-2 hover:underline"
-              href="/signup"
-            >
+            Don’t have an account?{" "}
+            <Link href="/signup" className="text-sky-700 ml-2 hover:underline">
               Sign up
             </Link>
           </p>
@@ -111,4 +108,5 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignInPage;
+
