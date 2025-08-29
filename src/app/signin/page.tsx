@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { TriangleAlert } from "lucide-react";
+import Cookies from "js-cookie";
 
 interface SignInForm {
   email: string;
@@ -40,7 +41,7 @@ const SignInPage: React.FC = () => {
 
       if (res.ok && data.token) {
         // Save token in cookie for 1 day
-        document.cookie = `token=${data.token}; path=/; max-age=86400`;
+        Cookies.set("token", data.token, { expires: 7, path: "/" });
         toast.success(data.message || "Login successful!");
         router.push("/dashboard");
       } else {

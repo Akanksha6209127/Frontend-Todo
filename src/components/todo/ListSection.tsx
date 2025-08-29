@@ -31,16 +31,21 @@ export default function ListSection() {
     fetchLists();
   }, []);
 
+  
+
   const addList = async () => {
     if (!newList.trim()) return;
     try {
-      const res = await axiosClient.post("/api/lists", { name: newList });
-      setLists((prev) => [res.data, ...prev]);
-      setNewList("");
-    } catch (err) {
-      console.error("Error adding list:", err);
+        const res = await axiosClient.post("/api/lists", {
+          name: newList,
+        });
+        setLists((prev) => [res.data, ...prev]);
+        setNewList("");
+      } catch (err: any) {
+      console.error("Error adding list:", err.response?.data || err.message);
     }
   };
+
 
   const updateList = (updated: ListType) => {
     setLists((prev) => prev.map((l) => (l._id === updated._id ? updated : l)));

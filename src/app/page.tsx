@@ -37,33 +37,61 @@
 // }
 
 
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import { useRouter } from "next/navigation";
+// import UserButton from "@/components/user-button";
+
+// export default function Home() {
+//   const router = useRouter();
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const token = document.cookie
+//       .split("; ")
+//       .find((row) => row.startsWith("token="))
+//       ?.split("=")[1];
+
+//     if (!token) {
+//       router.replace("/signin"); // safer than push for redirects
+//     } else {
+//       router.replace("/dashboard");
+//     }
+
+//     // No need to set loading false if redirecting
+//     // Only set loading false if you want to render something
+//   }, [router]);
+
+//   // Optionally show a loading spinner until redirect
+//   return (
+//     <div className="min-h-screen flex items-center justify-center">
+//       <p className="text-center text-gray-500">Redirecting...</p>
+//     </div>
+//   );
+// }
+
+
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import UserButton from "@/components/user-button";
 
 export default function Home() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
+    const cookies = document.cookie.split("; ");
+    const token = cookies.find((row) => row.startsWith("token="))?.split("=")[1];
 
-    if (!token) {
-      router.replace("/signin"); // safer than push for redirects
-    } else {
+    if (token) {
       router.replace("/dashboard");
+    } else {
+      router.replace("/signin");
     }
-
-    // No need to set loading false if redirecting
-    // Only set loading false if you want to render something
   }, [router]);
 
-  // Optionally show a loading spinner until redirect
   return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-center text-gray-500">Redirecting...</p>
