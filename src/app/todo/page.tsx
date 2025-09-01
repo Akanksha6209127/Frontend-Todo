@@ -36,11 +36,11 @@ export default function TodoTabs() {
 					</TabsList>
 
 					<TabsContent value="todos" className="mt-6">
-						<TodoSection />
+						<TodoSection boxId="default-box" />
 					</TabsContent>
 
 					<TabsContent value="lists" className="mt-6">
-						<ListSection />
+						<ListSection boxId="default-box"/>
 					</TabsContent>
 				</Tabs>
 			</TodoProvider>
