@@ -8,6 +8,7 @@ import axiosClient from "@/lib/axiosClient";
 import TodoItem from "@/components/todo/TodoItem";
 import { Plus } from "lucide-react";
 import Breadcrumb from "@/components/todo/Breadcrumb";
+
 import {
   Select,
   SelectContent,
@@ -30,12 +31,23 @@ type TodoType = {
   unit: string;
   completed?: boolean;
 };
+type BoxType = {
+  _id: string;
+  title: string;
+  type: "todo" | "list";
+};
 
 type TodoSectionProps = {
   boxId: string;
+  expandedBoxId: string | null;
+  boxes: BoxType[];
+  scrollToTop: () => void;
+  setExpandedBoxId: (id: string | null) => void;
+
+
 };
 
-export default function TodoSection({ boxId }: TodoSectionProps) {
+export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, setExpandedBoxId}: TodoSectionProps) {
   const [todos, setTodos] = useState<TodoType[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [newAmount, setNewAmount] = useState<number>(1);
@@ -96,15 +108,17 @@ export default function TodoSection({ boxId }: TodoSectionProps) {
     setTodos((prev) => prev.filter((t) => t._id !== id));
   };
 
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Lists" },
-  ];
-
+ 
+  
   return (
     <div className="space-y-6">
-      {/* ✅ Breadcrumb always on top */}
-      <Breadcrumb items={breadcrumbItems} />
+      <Breadcrumb
+        expandedBoxId={expandedBoxId}
+        boxes={boxes}
+        scrollToTop={scrollToTop}
+        setExpandedBoxId={setExpandedBoxId} 
+      />
+
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* ✅ Add Todo Section (left side) */}

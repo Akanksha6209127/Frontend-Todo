@@ -17,21 +17,32 @@ import LayoutWrapper from "@/components/todo/LayoutWrapper";
 import { TodoProvider } from "@/components/todo/TodoContext";
 
 type ListType = { _id: string; name: string; completed?: boolean };
+type BoxType = {
+  _id: string;
+  title: string;
+  type: "todo" | "list";
+};
 
 type ListSectionProps = {
   boxId: string;
+  expandedBoxId: string | null;
+  boxes: BoxType[];
+  scrollToTop: () => void;
+  setExpandedBoxId: (id: string | null) => void;
+  
+
 };
 
-export default function ListSection({ boxId }: ListSectionProps) {
+export default function ListSection({ boxId, expandedBoxId, boxes, scrollToTop, setExpandedBoxId }: ListSectionProps) {
   const [lists, setLists] = useState<ListType[]>([]);
   const [newList, setNewList] = useState("");
+  
+
+  
+
 
   // ✅ Breadcrumb items
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    // { label: "Dashboard", href: "/dashboard" },
-    { label: "Todos" },
-  ];
+  
 
   // Fetch lists on mount
   useEffect(() => {
@@ -68,12 +79,18 @@ export default function ListSection({ boxId }: ListSectionProps) {
     setLists((prev) => prev.filter((l) => l._id !== id));
   };
 
+
   return (
+    
    
     <div className="space-y-6">
-      {/* ✅ Breadcrumb Top pe */}
-      <Breadcrumb items={breadcrumbItems} />
-
+      <Breadcrumb
+        expandedBoxId={expandedBoxId}
+        boxes={boxes}
+        scrollToTop={scrollToTop}
+        setExpandedBoxId={setExpandedBoxId} 
+      />
+      
       <div
         className={`grid gap-4 ${
           lists.length > 0 ? "md:grid-cols-2" : "grid-cols-1"

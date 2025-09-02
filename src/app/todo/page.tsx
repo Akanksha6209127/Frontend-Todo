@@ -5,10 +5,20 @@ import TodoSection from "@/components/todo/TodoSection";
 import ListSection from "@/components/todo/ListSection";
 import { TodoProvider } from "@/components/todo/TodoContext";
 import LayoutWrapper from "@/components/todo/LayoutWrapper";
+import { useState } from "react";
 
 
 
 export default function TodoTabs() {
+	const [expandedBoxId, setExpandedBoxId] = useState<string | null>(null);
+
+  // ✅ State for all boxes (mock initially, can fetch later)
+	const [boxes, setBoxes] = useState<{ _id: string; title: string; type: "todo" | "list" }[]>([]);
+
+	// ✅ Scroll to top function
+	const scrollToTop = () => {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
 	return (
 		<LayoutWrapper>
 			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-0">
@@ -36,11 +46,27 @@ export default function TodoTabs() {
 					</TabsList>
 
 					<TabsContent value="todos" className="mt-6">
-						<TodoSection boxId="default-box" />
+						<TodoSection 
+							boxId="default-box"
+							expandedBoxId={expandedBoxId}
+							boxes={boxes}
+							scrollToTop={scrollToTop}
+							setExpandedBoxId={setExpandedBoxId}
+						
+						
+						/>
 					</TabsContent>
 
 					<TabsContent value="lists" className="mt-6">
-						<ListSection boxId="default-box"/>
+						<ListSection 
+							boxId="default-box"
+							expandedBoxId={expandedBoxId}
+							boxes={boxes}
+							scrollToTop={scrollToTop}
+							setExpandedBoxId={setExpandedBoxId}
+						
+						
+						/>
 					</TabsContent>
 				</Tabs>
 			</TodoProvider>
