@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -32,11 +33,10 @@ type UserType = {
 
 type BoxType = {
   _id: string;
-  title: string;           // normalized for UI
-  type: "todo" | "list";   // normalized type
+  title: string;
+  type: "todo" | "list";
 };
 
-// Raw API doc shapes
 type TodoDoc = { _id: string; title: string };
 type ListDoc = { _id: string; name: string };
 
@@ -59,7 +59,6 @@ function Breadcrumb({
   if (expandedBoxId) {
     const box = boxes.find((b) => b._id === expandedBoxId);
     if (box) {
-      // You wanted inverted labels here:
       const sectionLabel = box.type === "todo" ? "List" : "Todo";
       crumbs.push({
         label: sectionLabel,
@@ -92,7 +91,6 @@ function Breadcrumb({
 // ---------- Page ----------
 export default function DashboardPage() {
   const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState(true);
   const [boxes, setBoxes] = useState<BoxType[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [type, setType] = useState<"todo" | "list">("todo");
@@ -125,8 +123,6 @@ export default function DashboardPage() {
         }
       } catch {
         router.replace("/signin");
-      } finally {
-        setLoading(false);
       }
     };
     fetchUser();
@@ -141,16 +137,15 @@ export default function DashboardPage() {
           axiosClient.get<ListDoc[]>("/api/lists"),
         ]);
 
-        // Normalize to BoxType
         const allBoxes: BoxType[] = [
           ...todoRes.data.map((t) => ({
             _id: t._id,
-            title: t.title,     // todos -> title
+            title: t.title,
             type: "todo" as const,
           })),
           ...listRes.data.map((l) => ({
             _id: l._id,
-            title: l.name,      // lists -> name (normalize to title)
+            title: l.name,
             type: "list" as const,
           })),
         ];
@@ -163,48 +158,27 @@ export default function DashboardPage() {
     if (user) fetchData();
   }, [user]);
 
-  if (loading)
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-      </div>
-    );
-
   if (!user) return null;
 
-  // Create
+  // Create Box (Todo or List)
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
 
     try {
       if (type === "todo") {
-        // ✅ Correct: create a TODO
         const res = await axiosClient.post<TodoDoc>("/api/todos", {
           title: newTitle,
           amount: 1,
           unit: "piece",
           boxId: "defaultBox",
         });
-
-        const newBox: BoxType = {
-          _id: res.data._id,
-          title: res.data.title,
-          type: "todo",
-        };
-        setBoxes((prev) => [...prev, newBox]);
-      } else if (type === "list") {
-        // ✅ Correct: create a LIST
+        setBoxes((prev) => [...prev, { _id: res.data._id, title: res.data.title, type: "todo" }]);
+      } else {
         const res = await axiosClient.post<ListDoc>("/api/lists", {
           name: newTitle,
           boxId: "defaultBox",
         });
-
-        const newBox: BoxType = {
-          _id: res.data._id,
-          title: res.data.name, // normalize
-          type: "list",
-        };
-        setBoxes((prev) => [...prev, newBox]);
+        setBoxes((prev) => [...prev, { _id: res.data._id, title: res.data.name, type: "list" }]);
       }
 
       setNewTitle("");
@@ -215,7 +189,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Delete
+  // Delete Box
   const handleDelete = async () => {
     if (!deleteBoxId) return;
     try {
@@ -253,104 +227,84 @@ export default function DashboardPage() {
     }
   };
 
-  // Split boxes (inverted display per your codebase)
-  const listBoxes = boxes.filter((b) => b.type === "todo"); // shown under "Todos"
-  const todoBoxes = boxes.filter((b) => b.type === "list"); // shown under "Groceries"
+  const listBoxes = boxes.filter((b) => b.type === "todo");
+  const todoBoxes = boxes.filter((b) => b.type === "list");
 
   return (
     <TodoProvider>
-      <LayoutWrapper>
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Welcome, {user.name} 👋</h1>
-            <p className="text-gray-600 mt-1">Your role: {user.role}</p>
-          </div>
-
-          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-            <DialogTrigger asChild>
-              <Button aria-label="Create new box">Create</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  Create New {type === "todo" ? "Todo" : "List"}
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="flex gap-4 my-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={type === "todo"}
-                    onChange={() => setType("todo")}
-                  />
-                  Todo
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={type === "list"}
-                    onChange={() => setType("list")}
-                  />
-                  List
-                </label>
-              </div>
-
-              <input
-                type="text"
-                placeholder={`Enter ${type} title`}
-                className="w-full border p-2 rounded"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-              />
-
-              <Button className="mt-4 w-full" onClick={handleCreate}>
-                Save
-              </Button>
-            </DialogContent>
-          </Dialog>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome, {user.name} 👋</h1>
+          <p className="text-gray-600 mt-1">Your role: {user.role}</p>
         </div>
 
-        {/* Breadcrumb */}
-        <Breadcrumb
-          expandedBoxId={expandedBoxId}
-          boxes={boxes}
-          setExpandedBoxId={setExpandedBoxId}
-          scrollToSection={scrollToSection}
-        />
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogTrigger asChild>
+            <Button>Create</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New {type === "todo" ? "Todo" : "List"}</DialogTitle>
+            </DialogHeader>
 
-        {/* Expanded view */}
-        {expandedBoxId ? (
-          <div className="fixed inset-0 bg-white z-50 overflow-y-auto p-6">
-            <button
-              aria-label="Close expanded view"
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200"
-              onClick={() => setExpandedBoxId(null)}
-            >
-              <X className="h-6 w-6" />
-            </button>
+            <div className="flex gap-4 my-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" checked={type === "todo"} onChange={() => setType("todo")} />
+                Todo
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" checked={type === "list"} onChange={() => setType("list")} />
+                List
+              </label>
+            </div>
 
+            <input
+              type="text"
+              placeholder={`Enter ${type} title`}
+              className="w-full border p-2 rounded"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+            />
+
+            <Button className="mt-4 w-full" onClick={handleCreate}>
+              Save
+            </Button>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Breadcrumb */}
+      <Breadcrumb
+        expandedBoxId={expandedBoxId}
+        boxes={boxes}
+        setExpandedBoxId={setExpandedBoxId}
+        scrollToSection={scrollToSection}
+      />
+
+      {/* Expanded view */}
+      {expandedBoxId ? (
+        <div className="fixed inset-0 bg-white z-50 overflow-y-auto p-6">
+          <LayoutWrapper>
             {boxes.find((b) => b._id === expandedBoxId)?.type === "todo" ? (
               <ListSection boxId={expandedBoxId} />
             ) : (
               <TodoSection boxId={expandedBoxId} />
             )}
-          </div>
-        ) : (
-          <>
-            {/* List Section (shows TODOS) */}
+          </LayoutWrapper>
+        </div>
+      ) : (
+        <>
+          {/* Show Todos section only if there are boxes */}
+          {listBoxes.length > 0 && (
             <div ref={listSectionRef} className="mb-8">
               <h2 className="text-xl font-semibold mb-3">Todos</h2>
               <div className="flex flex-wrap gap-3">
                 {listBoxes.map((box) => (
                   <Card
                     key={box._id}
-                    // Rectangle: width > height, no rounded corners
-                    className="relative p-4 flex flex-col items-center justify-between text-center w-64 h-28 shadow hover:shadow-lg cursor-pointer rounded-none"
+                    className="relative p-4 flex flex-col items-center justify-between text-center w-44 h-28 shadow hover:shadow-lg cursor-pointer rounded-none"
                     onClick={() => toggleExpand(box._id)}
                   >
-                    {/* Stacked icons (top-right, vertical) */}
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                       <button
                         onClick={(e) => {
@@ -358,7 +312,6 @@ export default function DashboardPage() {
                           setDeleteBoxId(box._id);
                         }}
                         className="p-1 hover:bg-gray-100"
-                        aria-label="Delete"
                       >
                         <X className="w-5 h-5 text-red-600" />
                       </button>
@@ -368,36 +321,29 @@ export default function DashboardPage() {
                           handleShare(box);
                         }}
                         className="p-1 hover:bg-gray-100"
-                        aria-label="Share"
                       >
                         <Share2 className="w-5 h-5 text-blue-600" />
                       </button>
                     </div>
-
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      <Image
-                        src="/images/todo.avif"
-                        alt="todo"
-                        width={64}
-                        height={64}
-                        className="mb-1"
-                      />
+                      <Image src="/images/todo.avif" alt="todo" width={64} height={64} className="mb-1" />
                       <h2 className="font-medium text-sm">{box.title}</h2>
                     </div>
                   </Card>
                 ))}
               </div>
             </div>
+          )}
 
-            {/* Todo Section (shows LISTS) */}
+          {/* Show Groceries section only if there are boxes */}
+          {todoBoxes.length > 0 && (
             <div ref={todoSectionRef}>
               <h2 className="text-xl font-semibold mb-3">Groceries</h2>
               <div className="flex flex-wrap gap-3">
                 {todoBoxes.map((box) => (
                   <Card
                     key={box._id}
-                    // Match rectangle style here too
-                    className="relative p-4 flex flex-col items-center justify-between text-center w-64 h-28 shadow hover:shadow-lg cursor-pointer rounded-none"
+                    className="relative p-4 flex flex-col items-center justify-between text-center w-44 h-28 shadow hover:shadow-lg cursor-pointer rounded-none"
                     onClick={() => toggleExpand(box._id)}
                   >
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
@@ -407,7 +353,6 @@ export default function DashboardPage() {
                           setDeleteBoxId(box._id);
                         }}
                         className="p-1 hover:bg-gray-100"
-                        aria-label="Delete"
                       >
                         <X className="w-5 h-5 text-red-600" />
                       </button>
@@ -417,46 +362,41 @@ export default function DashboardPage() {
                           handleShare(box);
                         }}
                         className="p-1 hover:bg-gray-100"
-                        aria-label="Share"
                       >
                         <Share2 className="w-5 h-5 text-blue-600" />
                       </button>
                     </div>
-
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      <Image
-                        src="/images/list.jpg"
-                        alt="list"
-                        width={64}
-                        height={64}
-                        className="mb-1"
-                      />
+                      <Image src="/images/list.jpg" alt="list" width={64} height={64} className="mb-1" />
                       <h2 className="font-medium text-sm">{box.title}</h2>
                     </div>
                   </Card>
                 ))}
               </div>
             </div>
-          </>
-        )}
+          )}
+        </>
+      )}
 
-        {/* Delete dialog */}
-        <Dialog open={!!deleteBoxId} onOpenChange={() => setDeleteBoxId(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you sure you want to delete?</DialogTitle>
-            </DialogHeader>
-            <div className="flex gap-4 mt-4">
-              <Button variant="destructive" onClick={handleDelete}>
-                Delete
-              </Button>
-              <Button variant="outline" onClick={() => setDeleteBoxId(null)}>
-                Cancel
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </LayoutWrapper>
+      {/* Delete dialog */}
+      <Dialog open={!!deleteBoxId} onOpenChange={() => setDeleteBoxId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to delete?</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-4 mt-4">
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => setDeleteBoxId(null)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TodoProvider>
   );
 }
+
+
+
