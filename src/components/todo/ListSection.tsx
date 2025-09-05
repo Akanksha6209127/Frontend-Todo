@@ -93,14 +93,14 @@ export default function ListSection({
         
         <section className="rounded-2xl border p-6 shadow-sm bg-gray-50 dark:bg-gray-800/40">
           <h2 className="text-xl font-semibold mb-4">
-            {lists.length === 0 ? "Add Your First List" : "Add More Lists"}
+            {lists.length === 0 ? "Add Your First List" : "Add Todos"}
           </h2>
 
           <div className="flex flex-col gap-4">
             <input
               value={newList}
               onChange={(e) => setNewList(e.target.value)}
-              placeholder="Write your list here"
+              placeholder="Write your todo here"
               className="flex-1 rounded-lg border px-3 py-2 h-10"
             />
 
@@ -116,7 +116,7 @@ export default function ListSection({
 
         
         <section className="rounded-2xl border p-6 shadow-sm bg-gray-50 dark:bg-gray-800/40">
-          <h2 className="text-xl font-semibold mb-4">Your Lists</h2>
+          <h2 className="text-xl font-semibold mb-4">Your Todo</h2>
           {loading ? (
             <p className="text-center py-6">Loading lists...</p>
           ) : lists.length === 0 ? (
