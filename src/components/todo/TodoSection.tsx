@@ -6,7 +6,7 @@ import axios from "axios";
 import axiosClient from "@/lib/axiosClient";
 import TodoItem from "@/components/todo/TodoItem";
 import { Plus } from "lucide-react";
-import Breadcrumb from "@/components/todo/Breadcrumb";
+
 
 import {
   Select,
@@ -113,16 +113,7 @@ export default function TodoSection({
 
   return (
     <div className="space-y-6">
-      {/* ✅ Independent breadcrumb for Todo flow */}
-      {/* <Breadcrumb
-        expandedListGroupId={null} // ❌ List wala empty
-        expandedTodoGroupId={expandedTodoGroupId} // ✅ Todo group active
-        listGroups={[]} // ❌ Not needed
-        todoGroups={todoGroups} // ✅ TodoGroups
-        scrollToTop={scrollToTop}
-        setExpandedListGroupId={() => {}} // ❌ noop
-        setExpandedTodoGroupId={setExpandedTodoGroupId}
-      /> */}
+      
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* ✅ Add Todo Section (left side) */}
@@ -135,7 +126,7 @@ export default function TodoSection({
             <input
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
-              placeholder="Write your todo here"
+              placeholder="Write your list here"
               className="border rounded px-3 py-2 h-10"
             />
             <input

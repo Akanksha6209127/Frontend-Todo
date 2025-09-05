@@ -130,9 +130,9 @@ export default function DashboardPage() {
         ) : (
         <>
           <BoxGrid
-            title="Todo Groups"
+            title="List Groups"
             groups={todoGroups}
-            image="/images/todo.avif"
+            image="/images/list.jpg"
             onExpand={setExpandedTodoGroupId}
             onDelete={setDeleteGroupId}
             onShare={(group) => {
@@ -150,9 +150,9 @@ export default function DashboardPage() {
           />
 
           <BoxGrid
-            title="List Groups"
+            title="Todo Groups"
             groups={listGroups}
-            image="/images/list.jpg"
+            image="/images/todo.avif"
             onExpand={setExpandedListGroupId}
             onDelete={setDeleteGroupId}
             onShare={(group) => {

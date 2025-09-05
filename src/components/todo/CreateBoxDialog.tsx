@@ -41,11 +41,11 @@ export default function CreateBoxDialog({ onCreate }: Props) {
         <div className="flex gap-4 my-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={type === "todo"} onChange={() => setType("todo")} />
-            Todo
+            List
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={type === "list"} onChange={() => setType("list")} />
-            List
+            Todo
           </label>
         </div>
 

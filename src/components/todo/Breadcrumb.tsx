@@ -42,7 +42,7 @@ export default function Breadcrumb({
   if (expandedListGroupId) {
     const group = listGroups.find((g) => g._id === expandedListGroupId);
     if (group) {
-      crumbs.push({ label: "Shopping Groups" });
+      crumbs.push({ label: "Todo Group" });
       crumbs.push({ label: group.title });
     }
   }
@@ -51,7 +51,7 @@ export default function Breadcrumb({
   if (expandedTodoGroupId) {
     const group = todoGroups.find((g) => g._id === expandedTodoGroupId);
     if (group) {
-      crumbs.push({ label: "Todo Groups" });
+      crumbs.push({ label: "Shopping Group" });
       crumbs.push({ label: group.title });
     }
   }
