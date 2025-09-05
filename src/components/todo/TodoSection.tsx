@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,6 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { GroupType } from "@/types"; // ✅ use GroupType not BoxType
+
 type TodoType = {
   _id: string;
   title: string;
@@ -31,23 +32,20 @@ type TodoType = {
   unit: string;
   completed?: boolean;
 };
-type BoxType = {
-  _id: string;
-  title: string;
-  type: "todo" | "list";
-};
 
 type TodoSectionProps = {
-  boxId: string;
-  expandedBoxId: string | null;
-  boxes: BoxType[];
+  expandedTodoGroupId: string | null;
+  todoGroups: GroupType[];
   scrollToTop: () => void;
-  setExpandedBoxId: (id: string | null) => void;
-
-
+  setExpandedTodoGroupId: (id: string | null) => void;
 };
 
-export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, setExpandedBoxId}: TodoSectionProps) {
+export default function TodoSection({
+  expandedTodoGroupId,
+  todoGroups,
+  scrollToTop,
+  setExpandedTodoGroupId,
+}: TodoSectionProps) {
   const [todos, setTodos] = useState<TodoType[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [newAmount, setNewAmount] = useState<number>(1);
@@ -60,15 +58,17 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
     "tonne", "tablespoon", "teaspoon",
   ];
 
-  // Fetch todos when boxId changes
+  // ✅ Fetch todos when expandedTodoGroupId changes
   useEffect(() => {
-    fetchTodos();
-  }, [boxId]);
+    if (expandedTodoGroupId) {
+      fetchTodos(expandedTodoGroupId);
+    }
+  }, [expandedTodoGroupId]);
 
-  const fetchTodos = async () => {
+  const fetchTodos = async (groupId: string) => {
     setLoading(true);
     try {
-      const res = await axiosClient.get(`/api/todos?boxId=${boxId}`);
+      const res = await axiosClient.get(`/api/todos?groupId=${groupId}`);
       setTodos(res.data);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -80,13 +80,15 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
     }
   };
 
+  
   const addTodo = async () => {
-    if (!newTodo.trim()) return;
+    if (!newTodo.trim() || !expandedTodoGroupId) return;
     try {
-      const res = await axiosClient.post(`/api/todos?boxId=${boxId}`, {
+      const res = await axiosClient.post(`/api/todos`, {
         title: newTodo,
         amount: newAmount,
         unit: newUnit,
+        groupId: expandedTodoGroupId,   
       });
       setTodos((prev) => [res.data, ...prev]);
       setNewTodo("");
@@ -100,6 +102,7 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
     }
   };
 
+
   const updateTodo = (updated: TodoType) => {
     setTodos((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
   };
@@ -108,17 +111,18 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
     setTodos((prev) => prev.filter((t) => t._id !== id));
   };
 
- 
-  
   return (
     <div className="space-y-6">
-      <Breadcrumb
-        expandedBoxId={expandedBoxId}
-        boxes={boxes}
+      {/* ✅ Independent breadcrumb for Todo flow */}
+      {/* <Breadcrumb
+        expandedListGroupId={null} // ❌ List wala empty
+        expandedTodoGroupId={expandedTodoGroupId} // ✅ Todo group active
+        listGroups={[]} // ❌ Not needed
+        todoGroups={todoGroups} // ✅ TodoGroups
         scrollToTop={scrollToTop}
-        setExpandedBoxId={setExpandedBoxId} 
-      />
-
+        setExpandedListGroupId={() => {}} // ❌ noop
+        setExpandedTodoGroupId={setExpandedTodoGroupId}
+      /> */}
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* ✅ Add Todo Section (left side) */}
@@ -182,7 +186,7 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {todos.map((todo, index) => (
+                {todos.map((todo) => (
                   <TodoItem
                     key={todo._id}
                     todo={todo}
@@ -198,6 +202,4 @@ export default function TodoSection({ boxId, expandedBoxId, boxes, scrollToTop, 
     </div>
   );
 }
-
-
 

@@ -1,4 +1,7 @@
+
+
 "use client";
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,11 +14,17 @@ export default function CreateBoxDialog({ onCreate }: Props) {
   const [open, setOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [type, setType] = useState<"todo" | "list">("todo");
+ 
 
   const handleSave = () => {
-    if (!newTitle.trim()) return;
-    onCreate(newTitle, type);
+    if (!newTitle.trim() ) {
+      alert("Title are required");
+      return;
+    }
+
+    onCreate(newTitle.trim(), type);
     setNewTitle("");
+    setType("todo" ); 
     setOpen(false);
   };
 
@@ -43,7 +52,7 @@ export default function CreateBoxDialog({ onCreate }: Props) {
         <input
           type="text"
           placeholder={`Enter ${type} title`}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded my-2"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
         />

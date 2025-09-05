@@ -47,7 +47,7 @@ export default function EditItemModal({
     "can", "mg", "quintal", "tonne", "tablespoon", "teaspoon",
   ];
 
-  // reset values when modal opens
+  
   useEffect(() => {
     if (open) {
       setTitle(item.title);
@@ -76,7 +76,7 @@ export default function EditItemModal({
 
   return (
     <>
-      {/*  Edit button */}
+      
       <Button
         variant="ghost"
         size="sm"
@@ -104,7 +104,7 @@ export default function EditItemModal({
               />
             </div>
 
-            {/* Amount */}
+            
             <div>
               <label className="text-sm font-medium">Amount</label>
               <Input
@@ -115,7 +115,6 @@ export default function EditItemModal({
               />
             </div>
 
-            {/* Unit (shadcn Select) */}
             <div>
               <label className="text-sm font-medium">Unit</label>
               <Select value={unit} onValueChange={setUnit}>
@@ -133,7 +132,6 @@ export default function EditItemModal({
             </div>
           </div>
 
-          {/* Footer buttons */}
           <DialogFooter className="mt-4">
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancel

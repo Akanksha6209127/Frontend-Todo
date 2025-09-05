@@ -11,7 +11,6 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
       
-      {/* ---- Header ---- */}
       <header className="w-full sticky top-0 z-20 bg-white/70 dark:bg-gray-950/70 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="mx-auto container px-4 py-4 flex items-center justify-between">
           <h1 className="flex gap-2 items-center text-xl md:text-2xl font-bold tracking-tight">
@@ -20,7 +19,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
           </h1>
 
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
+            
             <button
               onClick={toggleTheme}
               className="inline-flex items-center gap-2 rounded-full px-3 py-2 bg-gray-200 hover:bg-gray-300 
@@ -29,31 +28,27 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
             >
               {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
-
-            {/* Logout */}
             <LogoutButton />
           </div>
         </div>
       </header>
 
-      {/* ---- Main Content ---- */}
+      
       <main className="flex-1 w-full mx-auto container px-4 md:px-8 py-6 grid gap-6 animate-fadeIn">
         {children}
       </main>
 
-      {/* ---- Footer ---- */}
+      
       <footer className="py-6 border-t border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 flex flex-col items-center justify-center text-center py-4">
-          
-          {/* Left Side */}
           
           <p className="text-sm  text-gray-500 dark:text-gray-400">
              This looks simple, but effort and dedication made it special.
             © {new Date().getFullYear()} • Made with ❤️ by{" "}
-            <span className="font-semibold">you</span>
+            <span className="font-semibold">Akanksha</span>
           </p>
 
-          {/* Right Side Links */}
+          
           <div className="flex space-x-6 mt-3 md:mt-0">
             <a
               href="https://github.com/Akanksha6209127"

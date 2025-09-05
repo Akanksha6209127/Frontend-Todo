@@ -13,5 +13,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/todo/:path*", "/todo" , "/lists/:path*", "/lists"], // Protect /todo and subroutes
+  matcher: ["/todo/:path*", "/todo" , "/lists/:path*", "/lists", "/group/:path*", "/group"], // Protect /todo and subroutes
 };

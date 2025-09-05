@@ -1,137 +1,132 @@
 
+
 "use client";
+
 import { useEffect, useState } from "react";
+import axios from "axios";
 import axiosClient from "@/lib/axiosClient";
 import ListItem from "@/components/todo/ListItem";
-import Breadcrumb from "@/components/todo/Breadcrumb";
+
 import { Plus } from "lucide-react";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import LayoutWrapper from "@/components/todo/LayoutWrapper";
-import { TodoProvider } from "@/components/todo/TodoContext";
-
-type ListType = { _id: string; name: string; completed?: boolean };
-type BoxType = {
-  _id: string;
-  title: string;
-  type: "todo" | "list";
-};
+import { ListType, GroupType } from "@/types";
 
 type ListSectionProps = {
-  boxId: string;
-  expandedBoxId: string | null;
-  boxes: BoxType[];
+  expandedListGroupId: string | null; 
+  listGroups: GroupType[];           
   scrollToTop: () => void;
-  setExpandedBoxId: (id: string | null) => void;
-  
-
+  setExpandedListGroupId: (id: string | null) => void;
 };
 
-export default function ListSection({ boxId, expandedBoxId, boxes, scrollToTop, setExpandedBoxId }: ListSectionProps) {
+export default function ListSection({
+  expandedListGroupId,
+  listGroups,
+  scrollToTop,
+  setExpandedListGroupId,
+}: ListSectionProps) {
   const [lists, setLists] = useState<ListType[]>([]);
   const [newList, setNewList] = useState("");
-  
+  const [loading, setLoading] = useState(false);
 
   
-
-
-  // ✅ Breadcrumb items
-  
-
-  // Fetch lists on mount
   useEffect(() => {
-    const fetchLists = async () => {
-      try {
-        const res = await axiosClient.get(`/api/lists?boxId=${boxId}`);
-        setLists(res.data);
-      } catch (err) {
-        console.error("Error fetching lists:", err);
-      }
-    };
-    fetchLists();
-  }, [boxId]);
+    if (expandedListGroupId) {
+      fetchLists(expandedListGroupId);
+    }
+  }, [expandedListGroupId]);
 
-  const addList = async () => {
-    if (!newList.trim()) return;
+  const fetchLists = async (groupId: string) => {
+    setLoading(true);
     try {
-      const res = await axiosClient.post(`/api/lists?boxId=${boxId}`, {
-        name: newList,
-        boxId,
-      });
-      setLists((prev) => [res.data, ...prev]);
-      setNewList("");
-    } catch (err: any) {
-      console.error("Error adding list:", err.response?.data || err.message);
+      const res = await axiosClient.get(`/api/lists?groupId=${groupId}`);
+      setLists(res.data);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching lists:", error.response?.data || error.message);
+        alert(error.response?.data?.message || "Failed to fetch lists");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateList = (updated: ListType) => {
-    setLists((prev) => prev.map((l) => (l._id === updated._id ? updated : l)));
+  const addList = async () => {
+    if (!newList.trim() || !expandedListGroupId) return;
+    try {
+      const res = await axiosClient.post(`/api/lists?groupId=${expandedListGroupId}`, {
+        name: newList,
+        groupId: expandedListGroupId,
+      });
+      setLists((prev) => [res.data, ...prev]);
+      setNewList("");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error adding list:", error.response?.data || error.message);
+        alert(error.response?.data?.message || "Failed to add list");
+      }
+    }
+  };
+
+  
+  const updateList = (updated: Partial<ListType> & { _id: string }) => {
+    setLists((prev) =>
+      prev.map((l) =>
+        l._id === updated._id ? { ...l, ...updated, groupId: l.groupId } : l
+      )
+    );
   };
 
   const deleteList = (id: string) => {
     setLists((prev) => prev.filter((l) => l._id !== id));
   };
 
-
   return (
-    
-   
     <div className="space-y-6">
-      <Breadcrumb
-        expandedBoxId={expandedBoxId}
-        boxes={boxes}
-        scrollToTop={scrollToTop}
-        setExpandedBoxId={setExpandedBoxId} 
-      />
-      
-      <div
-        className={`grid gap-4 ${
-          lists.length > 0 ? "md:grid-cols-2" : "grid-cols-1"
-        }`}
-      >
-        {/* Add List Section */}
+
+      <div className="grid gap-6 md:grid-cols-2">
+        
         <section className="rounded-2xl border p-6 shadow-sm bg-gray-50 dark:bg-gray-800/40">
-          <h2 className="text-xl font-semibold mb-4">Add Todo</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {lists.length === 0 ? "Add Your First List" : "Add More Lists"}
+          </h2>
 
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <input
-                value={newList}
-                onChange={(e) => setNewList(e.target.value)}
-                placeholder="Write your todo here"
-                className="flex-1 rounded-lg border px-3 py-2 h-10"
-              />
-            </div>
+            <input
+              value={newList}
+              onChange={(e) => setNewList(e.target.value)}
+              placeholder="Write your list here"
+              className="flex-1 rounded-lg border px-3 py-2 h-10"
+            />
 
-            <div>
-              <button
-                onClick={addList}
-                className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Create
-              </button>
-            </div>
+            <button
+              onClick={addList}
+              className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Create
+            </button>
           </div>
         </section>
 
-        {/* Lists Table */}
-        {lists.length > 0 && (
-          <section className="rounded-2xl border p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Your Todos</h2>
-
+        
+        <section className="rounded-2xl border p-6 shadow-sm bg-gray-50 dark:bg-gray-800/40">
+          <h2 className="text-xl font-semibold mb-4">Your Lists</h2>
+          {loading ? (
+            <p className="text-center py-6">Loading lists...</p>
+          ) : lists.length === 0 ? (
+            <p className="text-gray-500 text-center">No lists added yet</p>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px]">#</TableHead>
-                  <TableHead>Todo</TableHead>
+                  <TableHead>List</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -148,10 +143,10 @@ export default function ListSection({ boxId, expandedBoxId, boxes, scrollToTop, 
                 ))}
               </TableBody>
             </Table>
-          </section>
-        )}
+          )}
+        </section>
       </div>
     </div>
-     
   );
 }
+

@@ -1,48 +1,33 @@
 
-"use client"; 
 
-import { useEffect, useState, useRef } from "react";
+
+"use client";
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosClient from "@/lib/axiosClient";
 
-import { TodoProvider } from "@/components/todo/TodoContext";
 import LayoutWrapper from "@/components/todo/LayoutWrapper";
 import TodoSection from "@/components/todo/TodoSection";
 import ListSection from "@/components/todo/ListSection";
-
-
 import CreateBoxDialog from "@/components/todo/CreateBoxDialog";
 import BoxGrid from "@/components/todo/BoxGrid";
 import DeleteConfirmDialog from "@/components/todo/DeleteConDialog";
 import Breadcrumb from "@/components/todo/Breadcrumb";
 
-// ---------- Types ----------
+import type { GroupType } from "@/types";
+
+
 type UserType = { _id: string; name: string; email: string; role: string };
-type BoxType = { _id: string; title: string; type: "todo" | "list" };
-type TodoDoc = { _id: string; title: string };
-type ListDoc = { _id: string; name: string };
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserType | null>(null);
-  const [boxes, setBoxes] = useState<BoxType[]>([]);
-  const [expandedBoxId, setExpandedBoxId] = useState<string | null>(null);
-  const [deleteBoxId, setDeleteBoxId] = useState<string | null>(null);
-
+  const [groups, setGroups] = useState<GroupType[]>([]);
+  const [expandedTodoGroupId, setExpandedTodoGroupId] = useState<string | null>(null);
+  const [expandedListGroupId, setExpandedListGroupId] = useState<string | null>(null);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const router = useRouter();
-  const todoSectionRef = useRef<HTMLDivElement>(null);
-  const listSectionRef = useRef<HTMLDivElement>(null);
-  const dashboardRef = useRef<HTMLDivElement>(null);
 
-  const scrollToTop = () => {
-    dashboardRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToSection = (type: "todo" | "list") => {
-    if (type === "todo") todoSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-    else listSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // ---------- Fetch logged-in user ----------
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -56,127 +41,60 @@ export default function DashboardPage() {
     fetchUser();
   }, [router]);
 
-  // ---------- Fetch Boxes ----------
+  
   useEffect(() => {
     if (!user) return;
 
-    const fetchBoxes = async () => {
+    const fetchGroups = async () => {
       try {
-        const [todoRes, listRes] = await Promise.all([
-          axiosClient.get<TodoDoc[]>("/api/todos"),
-          axiosClient.get<ListDoc[]>("/api/lists"),
-        ]);
-
-        const combinedBoxes: BoxType[] = [
-          ...todoRes.data.map((t) => ({ _id: t._id, title: t.title, type: "todo" as const })),
-          ...listRes.data.map((l) => ({ _id: l._id, title: l.name, type: "list" as const })),
-        ];
-
-        setBoxes(combinedBoxes);
+        const res = await axiosClient.get<GroupType[]>("/api/groups");
+        setGroups(res.data);
       } catch (err) {
-        console.error("Failed to fetch boxes:", err);
+        console.error("Failed to fetch groups:", err);
       }
     };
 
-    fetchBoxes();
+    fetchGroups();
   }, [user]);
 
   if (!user) return null;
 
-  // ---------- Create Box ----------
-  // const handleCreate = async (newTitle: string, type: "todo" | "list") => {
-  //   try {
-  //     if (type === "todo") {
-  //       const res = await axiosClient.post<TodoDoc>("/api/todos", {
-  //         title: newTitle,
-  //         amount: 1,
-  //         unit: "piece",
-  //         boxId: "defaultBox",
-  //       });
-  //       setBoxes((prev) => [...prev, { _id: res.data._id, title: res.data.title, type: "todo" }]);
-  //     } else {
-  //       const res = await axiosClient.post<ListDoc>("/api/lists", {
-  //         name: newTitle,
-  //         boxId: "defaultBox",
-  //       });
-  //       setBoxes((prev) => [...prev, { _id: res.data._id, title: res.data.name, type: "list" }]);
-  //     }
-  //   } catch (err) {
-  //     console.error("Failed to create box:", err);
-  //     alert("Failed to create box. Check console for details.");
-  //   }
-  // };
-
-
+  
   const handleCreate = async (newTitle: string, type: "todo" | "list") => {
     try {
-      if (type === "todo") {
-        const res = await axiosClient.post<TodoDoc>("/api/todos", {
-          title: newTitle,
-          amount: 1,
-          unit: "piece",
-        });
-        const newBox = { _id: res.data._id, title: res.data.title, type: "todo" } as BoxType;
-        setBoxes((prev) => [...prev, newBox]);
-        // scroll to todo section after creation
-        scrollToSection("todo");
-      } else {
-        const res = await axiosClient.post<ListDoc>("/api/lists", {
-          name: newTitle,
-        });
-        const newBox = { _id: res.data._id, title: res.data.name, type: "list" } as BoxType;
-        setBoxes((prev) => [...prev, newBox]);
-        // scroll to list section after creation
-        scrollToSection("list");
-      }
+      const res = await axiosClient.post<GroupType>("/api/groups", {
+        
+        title: newTitle,
+        type,
+          
+      });
+      setGroups((prev) => [...prev, res.data]);
     } catch (err) {
-      console.error("Failed to create box:", err);
-      alert("Failed to create box. Check console for details.");
+      console.error("Failed to create group:", err);
+      alert("Failed to create group. Check console for details.");
     }
   };
 
-
-  // ---------- Delete Box ----------
+  // ---------- Delete Group ----------
   const handleDelete = async () => {
-    if (!deleteBoxId) return;
+    if (!deleteGroupId) return;
 
     try {
-      const box = boxes.find((b) => b._id === deleteBoxId);
-      if (!box) return;
-
-      await axiosClient.delete(box.type === "todo" ? `/api/todos/${deleteBoxId}` : `/api/lists/${deleteBoxId}`);
-      setBoxes((prev) => prev.filter((b) => b._id !== deleteBoxId));
-      setDeleteBoxId(null);
+      await axiosClient.delete(`/api/groups/${deleteGroupId}`);
+      setGroups((prev) => prev.filter((g) => g._id !== deleteGroupId));
+      setDeleteGroupId(null);
     } catch (err) {
-      console.error("Failed to delete box:", err);
-      alert("Failed to delete box. Check console.");
+      console.error("Failed to delete group:", err);
+      alert("Failed to delete group. Check console.");
     }
   };
 
-  // ---------- Share Box ----------
-  const handleShare = (box: BoxType) => {
-    if (typeof window === "undefined" || !navigator.share) {
-      alert(`Share this link: /dashboard/${box._id}`);
-      return;
-    }
-
-    const shareUrl = `${window.location.origin}/dashboard/${box._id}`;
-    navigator.share({
-      title: box.title,
-      text: `Check out my ${box.type}: ${box.title}`,
-      url: shareUrl,
-    });
-  };
-
-  // ---------- Separate Boxes ----------
-  const todoBoxes = boxes.filter((b) => b.type === "todo");
-  const listBoxes = boxes.filter((b) => b.type === "list");
-
-  
-
+  // ---------- Separate Groups ----------
+  const todoGroups = groups.filter((g) => g.type === "todo");
+  const listGroups = groups.filter((g) => g.type === "list");
 
   return (
-    <TodoProvider>
+    <>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Welcome, {user.name} 👋</h1>
@@ -185,64 +103,82 @@ export default function DashboardPage() {
         <CreateBoxDialog onCreate={handleCreate} />
       </div>
 
+      {/* Breadcrumb (optional for back navigation) */}
       <Breadcrumb
-        expandedBoxId={expandedBoxId}
-        boxes={boxes}
-        scrollToTop={scrollToTop}
-        setExpandedBoxId={setExpandedBoxId} 
+        expandedListGroupId={expandedListGroupId}
+        expandedTodoGroupId={expandedTodoGroupId}
+        listGroups={listGroups}
+        todoGroups={todoGroups}
+        scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        setExpandedListGroupId={setExpandedListGroupId}
+        setExpandedTodoGroupId={setExpandedTodoGroupId}
       />
-
-      
-
-
-      {expandedBoxId ? (
-        <div className="fixed inset-0 bg-white z-50 overflow-y-auto p-6">
-          <LayoutWrapper>
-            {boxes.find((b) => b._id === expandedBoxId)?.type === "todo" ? (
-              <TodoSection 
-                boxId={expandedBoxId}
-                expandedBoxId={expandedBoxId}
-                boxes={boxes}
-                scrollToTop={scrollToTop}
-                setExpandedBoxId={setExpandedBoxId} 
-              />
-            ) : (
-              <ListSection 
-                boxId={expandedBoxId} 
-                expandedBoxId={expandedBoxId}
-                boxes={boxes}
-                scrollToTop={scrollToTop}
-                setExpandedBoxId={setExpandedBoxId}
-              />
-            )}
-          </LayoutWrapper>
-        </div>
-      ) : (
+      {expandedTodoGroupId ? (
+        <TodoSection
+          expandedTodoGroupId={expandedTodoGroupId}
+          todoGroups={todoGroups}
+          scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          setExpandedTodoGroupId={setExpandedTodoGroupId}
+        />
+        ) : expandedListGroupId ? (
+          <ListSection
+            expandedListGroupId={expandedListGroupId}
+            listGroups={listGroups}
+            scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            setExpandedListGroupId={setExpandedListGroupId}
+          />
+        ) : (
         <>
-          <div ref={todoSectionRef}>
-            <BoxGrid
-              title="Todos"
-              boxes={todoBoxes}
-              image="/images/todo.avif"
-              onExpand={setExpandedBoxId}
-              onDelete={setDeleteBoxId}
-              onShare={handleShare}
-            />
-          </div>
-          <div ref={listSectionRef}>
-            <BoxGrid
-              title="Groceries"
-              boxes={listBoxes}
-              image="/images/list.jpg"
-              onExpand={setExpandedBoxId}
-              onDelete={setDeleteBoxId}
-              onShare={handleShare}
-            />
-          </div>
+          <BoxGrid
+            title="Todo Groups"
+            groups={todoGroups}
+            image="/images/todo.avif"
+            onExpand={setExpandedTodoGroupId}
+            onDelete={setDeleteGroupId}
+            onShare={(group) => {
+              if (typeof window === "undefined" || !navigator.share) {
+                alert(`Share this link: /dashboard/${group._id}`);
+                return;
+              }
+              const shareUrl = `${window.location.origin}/dashboard/${group._id}`;
+              navigator.share({
+                title: group.title,
+                text: `Check out my todo group: ${group.title}`,
+                url: shareUrl,
+              });
+            }}
+          />
+
+          <BoxGrid
+            title="List Groups"
+            groups={listGroups}
+            image="/images/list.jpg"
+            onExpand={setExpandedListGroupId}
+            onDelete={setDeleteGroupId}
+            onShare={(group) => {
+              if (typeof window === "undefined" || !navigator.share) {
+                alert(`Share this link: /dashboard/${group._id}`);
+                return;
+              }
+              const shareUrl = `${window.location.origin}/dashboard/${group._id}`;
+              navigator.share({
+                title: group.title,
+                text: `Check out my list group: ${group.title}`,
+                url: shareUrl,
+              });
+            }}
+          />
+
         </>
       )}
 
-      <DeleteConfirmDialog open={!!deleteBoxId} onConfirm={handleDelete} onCancel={() => setDeleteBoxId(null)} />
-    </TodoProvider>
+
+      {/* Delete confirm */}
+      <DeleteConfirmDialog
+        open={!!deleteGroupId}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteGroupId(null)}
+      />
+    </>
   );
 }
