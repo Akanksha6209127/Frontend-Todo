@@ -96,5 +96,8 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center">
       {/* <p className="text-center text-gray-500">Redirecting...</p> */}
     </div>
+    // <div className="h-screen flex items-center justify-center bg-blue-500 text-white text-3xl font-bold">
+    //   Tailwind is working 🚀
+    // </div>
   );
 }
