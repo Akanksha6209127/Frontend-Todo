@@ -52,8 +52,14 @@ export default function ListItem({
           <input
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
-            className="rounded border px-2 py-1 w-full"
-          />
+            placeholder="Edit name..."
+            className="w-full rounded px-2 py-1 
+              border border-gray-300 dark:border-gray-600 
+              bg-white dark:bg-gray-800 
+              text-gray-900 dark:text-gray-100 
+              placeholder-gray-400 dark:placeholder-gray-500
+              focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
         ) : (
           <span
             className={`${

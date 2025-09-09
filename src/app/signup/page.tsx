@@ -68,8 +68,11 @@ const SignUp = () => {
   };
 
   return (
-    <div className="h-[100vh] flex items-center justify-center bg-[#1b0918]">
-      <Card className="md:h-auto w-[80%] sm:w-[420px] p-4 sm:p-8">
+    <div className="h-[100vh] flex items-center justify-center bg-white dark:bg-gray-900">
+
+      {/* <Card className="md:h-auto w-[80%] sm:w-[420px] p-4 sm:p-8"> */}
+      <Card className="md:h-auto w-[80%] sm:w-[420px] p-4 sm:p-8 bg-white dark:bg-gray-800 text-black dark:text-white">
+
         <CardHeader>
           <CardTitle className="text-center">Sign up</CardTitle>
           <CardDescription className="text-sm text-center text-accent-foreground">

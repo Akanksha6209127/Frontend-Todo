@@ -26,9 +26,7 @@ type ListSectionProps = {
 
 export default function ListSection({
   expandedListGroupId,
-  listGroups,
-  scrollToTop,
-  setExpandedListGroupId,
+  
 }: ListSectionProps) {
   const [lists, setLists] = useState<ListType[]>([]);
   const [newList, setNewList] = useState("");
@@ -101,7 +99,11 @@ export default function ListSection({
               value={newList}
               onChange={(e) => setNewList(e.target.value)}
               placeholder="Write your todo here"
-              className="flex-1 rounded-lg border px-3 py-2 h-10"
+              className="border rounded px-3 py-2 h-10 
+              bg-white dark:bg-gray-800 
+              text-gray-900 dark:text-gray-100 
+              placeholder-gray-500 dark:placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <button

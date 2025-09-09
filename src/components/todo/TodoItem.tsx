@@ -63,7 +63,9 @@ export default function TodoItem({
       <TableCell>{todo.amount}</TableCell>
 
       {/*  Unit */}
-      <TableCell>{todo.unit}</TableCell>
+      <TableCell >
+        {todo.unit}
+      </TableCell>
 
       {/*  Actions */}
       <TableCell className="text-right space-x-2">

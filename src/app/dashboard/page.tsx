@@ -1,39 +1,37 @@
 
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axiosClient from "@/lib/axiosClient";
 
-import LayoutWrapper from "@/components/todo/LayoutWrapper";
-import TodoSection from "@/components/todo/TodoSection";
-import ListSection from "@/components/todo/ListSection";
 import CreateBoxDialog from "@/components/todo/CreateBoxDialog";
 import BoxGrid from "@/components/todo/BoxGrid";
 import DeleteConfirmDialog from "@/components/todo/DeleteConDialog";
-import Breadcrumb from "@/components/todo/Breadcrumb";
+import LogoutButton from "@/components/logout";
 
 import type { GroupType } from "@/types";
-
 
 type UserType = { _id: string; name: string; email: string; role: string };
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserType | null>(null);
   const [groups, setGroups] = useState<GroupType[]>([]);
-  const [expandedTodoGroupId, setExpandedTodoGroupId] = useState<string | null>(null);
-  const [expandedListGroupId, setExpandedListGroupId] = useState<string | null>(null);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const router = useRouter();
 
+  // ✅ Fetch user
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await axiosClient.get<UserType>("/api/auth/me");
-        if (res.data?._id) setUser(res.data);
-        else router.replace("/signin");
+        if (res.data?._id) {
+          setUser(res.data);
+        } else {
+          router.replace("/signin");
+        }
       } catch {
         router.replace("/signin");
       }
@@ -41,32 +39,30 @@ export default function DashboardPage() {
     fetchUser();
   }, [router]);
 
-  
+  //  Fetch groups after user loads
   useEffect(() => {
     if (!user) return;
-
     const fetchGroups = async () => {
       try {
         const res = await axiosClient.get<GroupType[]>("/api/groups");
         setGroups(res.data);
       } catch (err) {
         console.error("Failed to fetch groups:", err);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchGroups();
   }, [user]);
 
   if (!user) return null;
 
-  
-  const handleCreate = async (newTitle: string, type: "todo" | "list") => {
+  //  Create Group
+  const handleCreate = async (newTitle: string, type: "list" | "todo") => {
     try {
       const res = await axiosClient.post<GroupType>("/api/groups", {
-        
         title: newTitle,
         type,
-          
       });
       setGroups((prev) => [...prev, res.data]);
     } catch (err) {
@@ -75,10 +71,9 @@ export default function DashboardPage() {
     }
   };
 
-  // ---------- Delete Group ----------
+  //  Delete Group
   const handleDelete = async () => {
     if (!deleteGroupId) return;
-
     try {
       await axiosClient.delete(`/api/groups/${deleteGroupId}`);
       setGroups((prev) => prev.filter((g) => g._id !== deleteGroupId));
@@ -89,63 +84,42 @@ export default function DashboardPage() {
     }
   };
 
-  // ---------- Separate Groups ----------
+  //  Separate Groups
   const todoGroups = groups.filter((g) => g.type === "todo");
   const listGroups = groups.filter((g) => g.type === "list");
 
   return (
     <>
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Welcome, {user.name} 👋</h1>
           <p className="text-gray-600 mt-1">Your role: {user.role}</p>
         </div>
-        <CreateBoxDialog onCreate={handleCreate} />
+        <div className="flex items-center gap-4">
+          <CreateBoxDialog onCreate={handleCreate} />
+          <LogoutButton />
+        </div>
+        
       </div>
 
-      {/* Breadcrumb (optional for back navigation) */}
-      <Breadcrumb
-        expandedListGroupId={expandedListGroupId}
-        expandedTodoGroupId={expandedTodoGroupId}
-        listGroups={listGroups}
-        todoGroups={todoGroups}
-        scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        setExpandedListGroupId={setExpandedListGroupId}
-        setExpandedTodoGroupId={setExpandedTodoGroupId}
-      />
-      {expandedTodoGroupId ? (
-        <TodoSection
-          expandedTodoGroupId={expandedTodoGroupId}
-          todoGroups={todoGroups}
-          scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          setExpandedTodoGroupId={setExpandedTodoGroupId}
-        />
-        ) : expandedListGroupId ? (
-          <ListSection
-            expandedListGroupId={expandedListGroupId}
-            listGroups={listGroups}
-            scrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            setExpandedListGroupId={setExpandedListGroupId}
-          />
-        ) : (
+      {/* Loader */}
+      {loading ? (
+        <p className="text-center text-gray-500">Loading your groups...</p>
+      ) : (
         <>
+          
           <BoxGrid
             title="List Groups"
             groups={todoGroups}
             image="/images/list.jpg"
-            onExpand={setExpandedTodoGroupId}
+            onExpand={(id) => router.push(`/dashboard/todo/${id}`)}
             onDelete={setDeleteGroupId}
             onShare={(group) => {
-              if (typeof window === "undefined" || !navigator.share) {
-                alert(`Share this link: /dashboard/${group._id}`);
-                return;
-              }
-              const shareUrl = `${window.location.origin}/dashboard/${group._id}`;
-              navigator.share({
-                title: group.title,
-                text: `Check out my todo group: ${group.title}`,
-                url: shareUrl,
-              });
+              const shareUrl = `${window.location.origin}/dashboard/todo/${group._id}`;
+              navigator.share
+                ? navigator.share({ title: group.title, text: `Check out my todo group`, url: shareUrl })
+                : alert(`Share this link: ${shareUrl}`);
             }}
           />
 
@@ -153,27 +127,21 @@ export default function DashboardPage() {
             title="Todo Groups"
             groups={listGroups}
             image="/images/todo.avif"
-            onExpand={setExpandedListGroupId}
+            onExpand={(id) => router.push(`/dashboard/list/${id}`)}
             onDelete={setDeleteGroupId}
             onShare={(group) => {
-              if (typeof window === "undefined" || !navigator.share) {
-                alert(`Share this link: /dashboard/${group._id}`);
-                return;
-              }
-              const shareUrl = `${window.location.origin}/dashboard/${group._id}`;
-              navigator.share({
-                title: group.title,
-                text: `Check out my list group: ${group.title}`,
-                url: shareUrl,
-              });
+              const shareUrl = `${window.location.origin}/dashboard/list/${group._id}`;
+              navigator.share
+                ? navigator.share({ title: group.title, text: `Check out my list group`, url: shareUrl })
+                : alert(`Share this link: ${shareUrl}`);
             }}
           />
+
 
         </>
       )}
 
-
-      {/* Delete confirm */}
+      {/* ✅ Delete confirm */}
       <DeleteConfirmDialog
         open={!!deleteGroupId}
         onConfirm={handleDelete}

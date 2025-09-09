@@ -127,22 +127,47 @@ export default function TodoSection({
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               placeholder="Write your list here"
-              className="border rounded px-3 py-2 h-10"
+              className="border rounded px-3 py-2 h-10 
+              bg-white dark:bg-gray-800 
+              text-gray-900 dark:text-gray-100 
+              placeholder-gray-500 dark:placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="number"
               min={1}
               value={newAmount}
               onChange={(e) => setNewAmount(Number(e.target.value))}
-              className="border rounded px-3 py-2 h-10"
+              className="border rounded px-3 py-2 h-10 
+              bg-white dark:bg-gray-800 
+              text-gray-900 dark:text-gray-100 
+              placeholder-gray-500 dark:placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <Select value={newUnit} onValueChange={setNewUnit}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="-- Select Unit --" />
+              <SelectTrigger  className="w-full 
+                bg-white dark:bg-gray-800 
+                text-gray-900 dark:text-gray-100 
+                border border-gray-300 dark:border-gray-700" 
+              >
+      
+                <SelectValue 
+                  placeholder="-- Select Unit --" 
+                />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                  className="bg-white dark:bg-gray-800 
+                text-gray-900 dark:text-gray-100 
+                border border-gray-200 dark:border-gray-700
+                shadow-lg rounded-md"
+                >
                 {newUnits.map((unit) => (
-                  <SelectItem key={unit} value={unit}>
+                  <SelectItem 
+                    key={unit} 
+                    value={unit}
+                    className="hover:bg-gray-100 dark:hover:bg-gray-700 
+                    focus:bg-gray-100 dark:focus:bg-gray-700"
+                  >
                     {unit}
                   </SelectItem>
                 ))}
@@ -183,7 +208,9 @@ export default function TodoSection({
                     todo={todo}
                     onUpdate={updateTodo}
                     onDelete={deleteTodo}
-                  />
+                    
+                  ></TodoItem>
+                  
                 ))}
               </TableBody>
             </Table>

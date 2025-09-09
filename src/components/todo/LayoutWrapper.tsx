@@ -3,7 +3,7 @@
 
 import { useTheme } from "@/components/ui/themeContext";
 import { NotebookPenIcon, Moon, Sun, Github, Linkedin } from "lucide-react";
-import LogoutButton from "@/components/logout";
+
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme();
@@ -28,7 +28,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
             >
               {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
-            <LogoutButton />
+            
           </div>
         </div>
       </header>
